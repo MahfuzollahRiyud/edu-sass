@@ -17,8 +17,8 @@ class StudentController extends Controller
         $teacher = Teacher::where('user_id', $user->id)->firstOrFail();
 
         // Get all class-subjects assigned to this teacher
-        $assignedClassSubjects = ClassSubject::with(['academicClass', 'subject'])
-            ->where('teacher_id', $teacher->id)
+        $assignedClassSubjects = $teacher->classSubjects()
+            ->with(['academicClass', 'subject'])
             ->get();
 
         $selectedClassSubjectId = $request->input('class_subject_id', $assignedClassSubjects->first()?->id);
@@ -27,8 +27,8 @@ class StudentController extends Controller
         $students = collect();
 
         if ($selectedClassSubjectId) {
-            $selectedClassSubject = ClassSubject::with(['academicClass', 'subject'])
-                ->where('teacher_id', $teacher->id)
+            $selectedClassSubject = $teacher->classSubjects()
+                ->with(['academicClass', 'subject'])
                 ->find($selectedClassSubjectId);
 
             if ($selectedClassSubject) {

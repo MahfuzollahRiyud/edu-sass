@@ -66,4 +66,24 @@ class TeacherManagementTest extends TestCase
 
         $response->assertOk();
     }
+
+    public function test_teacher_can_view_my_students_page()
+    {
+        $tenant = Tenant::create(['name' => 'Demo Center', 'slug' => 'demo-center']);
+        $user = User::factory()->create(['role' => 'teacher', 'tenant_id' => $tenant->id]);
+        $teacher = Teacher::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'phone' => '01700000000']);
+
+        $class = AcademicClass::create(['tenant_id' => $tenant->id, 'name' => 'Class 10']);
+        $subject = Subject::create(['tenant_id' => $tenant->id, 'name' => 'Physics']);
+        $classSubject = ClassSubject::create([
+            'tenant_id' => $tenant->id,
+            'academic_class_id' => $class->id,
+            'subject_id' => $subject->id,
+        ]);
+        $teacher->classSubjects()->attach($classSubject->id, ['tenant_id' => $tenant->id]);
+
+        $response = $this->actingAs($user)->get(route('teacher.students.index'));
+
+        $response->assertOk();
+    }
 }
