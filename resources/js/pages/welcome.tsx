@@ -26,10 +26,8 @@ export default function Welcome() {
                 <header className="border-b border-border/60 bg-background/95 backdrop-blur sticky top-0 z-50">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                            <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                                <GraduationCap className="size-5" />
-                            </div>
-                            <span className="font-bold text-lg tracking-tight">EduSaaS Platform</span>
+                            <img src="/images/logo.webp" alt="EduFlow" className="size-9 object-contain rounded-lg shadow-sm border border-border/60 bg-white dark:bg-slate-900 p-0.5" />
+                            <span className="font-bold text-lg tracking-tight">EduFlow</span>
                         </div>
 
                         <div className="flex items-center gap-2.5">

@@ -1,20 +1,24 @@
 import { usePage } from '@inertiajs/react';
-
 import AppLogoIcon from '@/components/app-logo-icon';
 
 export default function AppLogo() {
-    const { name } = usePage().props;
+    const { name, tenant } = usePage<any>().props;
+    const displayName = tenant?.name || name || 'EduFlow';
 
     return (
-        <>
-            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
+        <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-border/60 flex aspect-square size-9 items-center justify-center rounded-lg p-0.5 shadow-sm shrink-0">
+                <AppLogoIcon className="size-7 object-contain" />
             </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">
-                    {name}
+            <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-bold text-foreground">
+                    {displayName}
+                </span>
+                <span className="text-[11px] text-muted-foreground truncate font-medium">
+                    EduFlow Education
                 </span>
             </div>
-        </>
+        </div>
     );
 }
+
