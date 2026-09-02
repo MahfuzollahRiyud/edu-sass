@@ -28,7 +28,8 @@ export default function ClassSubjectsManager({ academicClass, availableSubjects 
     function handleUpdateFee(classSubjectId: number, currentFee: number) {
         const newFee = prompt('Enter new Monthly Fee for this subject (৳):', String(currentFee || '0'));
         if (newFee !== null && !isNaN(Number(newFee)) && Number(newFee) >= 0) {
-            router.patch(`/admin/classes/${academicClass.id}/subjects/${classSubjectId}`, {
+            router.post(`/admin/classes/${academicClass.id}/subjects/${classSubjectId}`, {
+                _method: 'PATCH',
                 monthly_fee: Number(newFee),
             }, { preserveScroll: true });
         }
