@@ -1,7 +1,8 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Eye, GraduationCap, LogIn, Plus, Power, Search } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Eye, GraduationCap, LogIn, Plus, Power, Printer, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PrintHeader, PrintSignatureFooter } from '@/components/print-header';
 import type { AcademicClass, PaginatedData, Student } from '@/types';
 import { useState } from 'react';
 
@@ -17,6 +18,9 @@ type Props = {
 export default function StudentsIndex({ students, classes, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [classId, setClassId] = useState(filters.class_id || '');
+    const { auth } = usePage<any>().props;
+
+    const selectedClass = classes.find((c) => String(c.id) === String(classId));
 
     function handleFilter(e: React.FormEvent) {
         e.preventDefault();
@@ -34,16 +38,36 @@ export default function StudentsIndex({ students, classes, filters }: Props) {
                             Manage student admissions, profiles, and subject enrollments.
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href="/admin/students/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Admission
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2 print:hidden">
+                        <Button
+                            variant="outline"
+                            onClick={() => window.print()}
+                            className="gap-2"
+                        >
+                            <Printer className="h-4 w-4" />
+                            Print / PDF Directory
+                        </Button>
+                        <Button asChild>
+                            <Link href="/admin/students/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                New Admission
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
+                <PrintHeader
+                    institutionName={auth?.tenant?.name || 'Coaching Center'}
+                    reportTitle="Official Students Directory & Enrollment List"
+                    subTitle={selectedClass ? `Academic Class: ${selectedClass.name} ${selectedClass.section ? `(${selectedClass.section})` : ''}` : 'All Classes & Batches'}
+                    metaInfo={[
+                        { label: 'Total Students', value: students.data.length },
+                        { label: 'Class Filter', value: selectedClass ? selectedClass.name : 'ALL' },
+                    ]}
+                />
+
                 {/* Filters */}
-                <form onSubmit={handleFilter} className="flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <form onSubmit={handleFilter} className="flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border print:hidden">
                     <div className="relative flex-1">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -86,7 +110,7 @@ export default function StudentsIndex({ students, classes, filters }: Props) {
                                     <th className="px-4 py-3 text-left font-medium">Contact & Guardian</th>
                                     <th className="px-4 py-3 text-right font-medium">Monthly Fee</th>
                                     <th className="px-4 py-3 text-center font-medium">Status</th>
-                                    <th className="px-4 py-3 text-right font-medium">Actions</th>
+                                    <th className="px-4 py-3 text-right font-medium print:hidden">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -130,7 +154,7 @@ export default function StudentsIndex({ students, classes, filters }: Props) {
                                                 {stu.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-3 text-right print:hidden">
                                             <div className="flex items-center justify-end gap-1">
                                                 <Button
                                                     variant="outline"
@@ -168,6 +192,8 @@ export default function StudentsIndex({ students, classes, filters }: Props) {
                         </table>
                     </div>
                 </div>
+
+                <PrintSignatureFooter />
             </div>
         </>
     );

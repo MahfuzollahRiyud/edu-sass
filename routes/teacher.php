@@ -4,6 +4,7 @@ use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\DashboardController;
 use App\Http\Controllers\Teacher\ExamController;
 use App\Http\Controllers\Teacher\ScheduleController;
+use App\Http\Controllers\Teacher\StudentController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'role:teacher'])
@@ -11,6 +12,7 @@ Route::middleware(['auth', 'verified', 'role:teacher'])
     ->name('teacher.')
     ->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('students', [StudentController::class, 'index'])->name('students.index');
         Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule');
         Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');

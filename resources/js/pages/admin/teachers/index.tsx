@@ -1,6 +1,7 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { LogIn, Mail, Phone, Plus, Power, UserCheck, Users } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { LogIn, Mail, Phone, Plus, Power, Printer, UserCheck, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PrintHeader, PrintSignatureFooter } from '@/components/print-header';
 import type { PaginatedData, Teacher } from '@/types';
 
 type Props = {
@@ -8,6 +9,8 @@ type Props = {
 };
 
 export default function TeachersIndex({ teachers }: Props) {
+    const { auth } = usePage<any>().props;
+
     return (
         <>
             <Head title="Teachers" />
@@ -19,13 +22,32 @@ export default function TeachersIndex({ teachers }: Props) {
                             Manage teaching staff and their subject assignments.
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href="/admin/teachers/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Teacher
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2 print:hidden">
+                        <Button
+                            variant="outline"
+                            onClick={() => window.print()}
+                            className="gap-2"
+                        >
+                            <Printer className="h-4 w-4" />
+                            Print / PDF Directory
+                        </Button>
+                        <Button asChild>
+                            <Link href="/admin/teachers/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Teacher
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
+
+                <PrintHeader
+                    institutionName={auth?.tenant?.name || 'Coaching Center'}
+                    reportTitle="Faculty & Teachers Official Staff Directory"
+                    metaInfo={[
+                        { label: 'Total Teachers', value: teachers.data.length },
+                        { label: 'Active Faculty', value: teachers.data.filter((t) => t.is_active).length },
+                    ]}
+                />
 
                 <div className="bg-card border-sidebar-border/70 dark:border-sidebar-border rounded-xl border">
                     <div className="overflow-x-auto">
@@ -37,7 +59,7 @@ export default function TeachersIndex({ teachers }: Props) {
                                     <th className="px-4 py-3 text-left font-medium">Designation</th>
                                     <th className="px-4 py-3 text-left font-medium">Assigned Classes & Subjects</th>
                                     <th className="px-4 py-3 text-center font-medium">Status</th>
-                                    <th className="px-4 py-3 text-right font-medium">Actions</th>
+                                    <th className="px-4 py-3 text-right font-medium print:hidden">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -98,7 +120,7 @@ export default function TeachersIndex({ teachers }: Props) {
                                                 {t.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-3 text-right print:hidden">
                                             <div className="flex items-center justify-end gap-1.5">
                                                 <Button
                                                     variant="outline"
@@ -131,6 +153,8 @@ export default function TeachersIndex({ teachers }: Props) {
                         </table>
                     </div>
                 </div>
+
+                <PrintSignatureFooter />
             </div>
         </>
     );

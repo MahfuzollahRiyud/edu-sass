@@ -7,10 +7,12 @@ import {
     LogIn,
     Plus,
     Power,
+    Printer,
     X,
     XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { PrintHeader, PrintSignatureFooter } from '@/components/print-header';
 import { Button } from '@/components/ui/button';
 import type { PaginatedData, Tenant } from '@/types';
 
@@ -67,16 +69,37 @@ export default function TenantsIndex({ tenants, currentFilter, counts }: Props) 
                             Manage all coaching institutes, approve new applications, and control access.
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href="/super-admin/tenants/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Center Manually
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2 print:hidden">
+                        <Button
+                            variant="outline"
+                            onClick={() => window.print()}
+                            className="gap-2"
+                        >
+                            <Printer className="h-4 w-4" />
+                            Print / PDF Directory
+                        </Button>
+                        <Button asChild>
+                            <Link href="/super-admin/tenants/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Center Manually
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
+                <PrintHeader
+                    institutionName="EduSaaS Super Admin Central Portal"
+                    reportTitle="Coaching Centers & Institutions Directory"
+                    metaInfo={[
+                        { label: 'Filter', value: currentFilter ? currentFilter.toUpperCase() : 'ALL' },
+                        { label: 'Total Centers', value: counts.all },
+                        { label: 'Approved', value: counts.approved },
+                        { label: 'Pending', value: counts.pending },
+                    ]}
+                />
+
                 {/* Filter Tabs */}
-                <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+                <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3 print:hidden">
                     <FilterButton
                         label="All Centers"
                         active={currentFilter === 'all' || !currentFilter}
@@ -125,7 +148,7 @@ export default function TenantsIndex({ tenants, currentFilter, counts }: Props) 
                                     <th className="px-4 py-3 text-center font-medium">
                                         Status
                                     </th>
-                                    <th className="px-4 py-3 text-right font-medium">
+                                    <th className="px-4 py-3 text-right font-medium print:hidden">
                                         Actions
                                     </th>
                                 </tr>
@@ -205,7 +228,7 @@ export default function TenantsIndex({ tenants, currentFilter, counts }: Props) 
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-3 text-right print:hidden">
                                             <div className="flex items-center justify-end gap-1.5">
                                                 {/* Pending Actions */}
                                                 {tenant.status === 'pending' && (
@@ -312,6 +335,8 @@ export default function TenantsIndex({ tenants, currentFilter, counts }: Props) 
                         </table>
                     </div>
                 </div>
+
+                <PrintSignatureFooter />
 
                 {/* Reject Modal Dialog */}
                 {rejectingTenant && (

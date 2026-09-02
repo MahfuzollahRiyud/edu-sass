@@ -3,8 +3,10 @@ import {
     Award,
     CalendarDays,
     ClipboardList,
+    GraduationCap,
     LayoutGrid,
     UserCheck,
+    Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -28,6 +30,11 @@ export function TeacherSidebar() {
             title: 'Dashboard',
             href: '/teacher/dashboard',
             icon: LayoutGrid,
+        },
+        {
+            title: 'My Students',
+            href: '/teacher/students',
+            icon: GraduationCap,
         },
         {
             title: 'My Schedule',
