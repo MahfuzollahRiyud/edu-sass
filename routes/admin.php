@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\Admin\TeacherReportController;
 use App\Http\Controllers\Admin\TimeSlotController;
 use Illuminate\Support\Facades\Route;
 
@@ -72,4 +73,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
 
         Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
+
+        // Reports
+        Route::get('reports/teachers', [TeacherReportController::class, 'index'])->name('reports.teachers');
     });

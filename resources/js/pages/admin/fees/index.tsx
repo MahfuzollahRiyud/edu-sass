@@ -1,8 +1,9 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { CreditCard, Download, FileText, Plus, Receipt, RefreshCw, Search } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { CreditCard, Download, FileText, Plus, Printer, Receipt, RefreshCw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PrintHeader, PrintSignatureFooter } from '@/components/print-header';
 import type { AcademicClass, FeeInvoice, FeeType, PaginatedData } from '@/types';
 import { useState, type FormEvent } from 'react';
 
@@ -23,10 +24,13 @@ type Props = {
 };
 
 export default function FeesIndex({ invoices, classes, feeTypes, summary, filters }: Props) {
+    const { auth } = usePage<any>().props;
     const [status, setStatus] = useState(filters.status || '');
     const [month, setMonth] = useState(filters.month || '');
     const [classId, setClassId] = useState(filters.class_id || '');
     const [showBatchModal, setShowBatchModal] = useState(false);
+
+    const selectedClass = classes.find((c) => String(c.id) === String(classId));
 
     function applyFilter(newStatus = status, newMonth = month, newClassId = classId) {
         router.get('/admin/fees', { status: newStatus, month: newMonth, class_id: newClassId }, { preserveState: true });
@@ -60,7 +64,15 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                             Manage billing invoices, track dues, record payments, and issue receipts.
                         </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 print:hidden">
+                        <Button
+                            variant="outline"
+                            onClick={() => window.print()}
+                            className="gap-2"
+                        >
+                            <Printer className="h-4 w-4" />
+                            Print Dues / Invoices Report
+                        </Button>
                         <Button variant="outline" asChild>
                             <Link href="/admin/fee-types">
                                 Fee Types
@@ -79,8 +91,22 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                     </div>
                 </div>
 
+                <PrintHeader
+                    institutionName={auth?.tenant?.name || 'Coaching Center'}
+                    reportTitle={status === 'unpaid' ? 'Student Fee Dues & Defaulters List' : 'Student Billing & Fee Invoices Statement'}
+                    subTitle={
+                        `${month ? `Billing Month: ${month}` : 'All Invoices'} | ${selectedClass ? `Class: ${selectedClass.name}` : 'All Classes'}`
+                    }
+                    metaInfo={[
+                        { label: 'Status Filter', value: status ? status.toUpperCase() : 'ALL' },
+                        { label: 'Total Invoiced', value: `৳${Number(summary.total_amount).toLocaleString()}` },
+                        { label: 'Total Collected', value: `৳${Number(summary.total_paid).toLocaleString()}` },
+                        { label: 'Total Due', value: `৳${Number(summary.total_due).toLocaleString()}` },
+                    ]}
+                />
+
                 {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-3 print:hidden">
                     <div className="bg-card border rounded-xl p-4">
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Invoiced</p>
                         <p className="mt-1 text-2xl font-bold">৳{Number(summary.total_amount).toLocaleString()}</p>
@@ -96,7 +122,7 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <div className="flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border print:hidden">
                     <select
                         className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm sm:w-44"
                         value={status}
@@ -150,7 +176,7 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                                     <th className="px-4 py-3 text-right font-medium">Paid</th>
                                     <th className="px-4 py-3 text-right font-medium">Remaining Due</th>
                                     <th className="px-4 py-3 text-center font-medium">Status</th>
-                                    <th className="px-4 py-3 text-right font-medium">Actions</th>
+                                    <th className="px-4 py-3 text-right font-medium print:hidden">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -158,7 +184,7 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                                     <tr>
                                         <td colSpan={7} className="text-muted-foreground px-4 py-12 text-center">
                                             <CreditCard className="mx-auto mb-3 h-10 w-10 opacity-40" />
-                                            <p>No invoices found matching your filters.</p>
+                                            <p>No fee invoices found matching the selected filters.</p>
                                         </td>
                                     </tr>
                                 )}
@@ -169,23 +195,26 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                                             <div className="text-muted-foreground text-xs font-mono">
                                                 {inv.student?.student_id} • {inv.student?.academic_class?.name}
                                             </div>
+                                            {inv.student?.phone && (
+                                                <div className="text-[11px] text-muted-foreground">📞 {inv.student.phone}</div>
+                                            )}
                                         </td>
-                                        <td className="px-4 py-3 font-medium">
-                                            {inv.title}
-                                            {inv.month && <span className="block text-xs text-muted-foreground">{inv.month}</span>}
+                                        <td className="px-4 py-3">
+                                            <div className="font-medium">{inv.title}</div>
+                                            <div className="text-muted-foreground text-xs">{inv.fee_type?.name}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-right font-mono font-medium">
+                                        <td className="px-4 py-3 text-right font-medium">
                                             ৳{Number(inv.amount).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3 text-right font-mono text-green-600">
+                                        <td className="px-4 py-3 text-right text-green-600 font-medium">
                                             ৳{Number(inv.paid_amount).toLocaleString()}
                                         </td>
-                                        <td className="px-4 py-3 text-right font-mono font-bold text-red-600">
+                                        <td className="px-4 py-3 text-right font-bold font-mono text-red-600">
                                             ৳{Number(inv.due_amount).toLocaleString()}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${
                                                     inv.status === 'paid'
                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                                         : inv.status === 'partial'
@@ -193,10 +222,10 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                                                         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                                 }`}
                                             >
-                                                {inv.status.toUpperCase()}
+                                                {inv.status.replace('_', ' ')}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-3 text-right print:hidden">
                                             {Number(inv.due_amount) > 0 ? (
                                                 <Button size="sm" asChild>
                                                     <Link href={`/admin/payments/create?invoice_id=${inv.id}`}>
@@ -213,6 +242,8 @@ export default function FeesIndex({ invoices, classes, feeTypes, summary, filter
                         </table>
                     </div>
                 </div>
+
+                <PrintSignatureFooter />
 
                 {/* Batch Monthly Fee Generator Modal */}
                 {showBatchModal && (

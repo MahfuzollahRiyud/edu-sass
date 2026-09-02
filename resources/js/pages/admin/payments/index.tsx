@@ -1,7 +1,8 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Download, Plus, Receipt, Search } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Download, Plus, Printer, Receipt, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PrintHeader, PrintSignatureFooter } from '@/components/print-header';
 import type { PaginatedData, Payment } from '@/types';
 import { useState } from 'react';
 
@@ -19,9 +20,12 @@ type Props = {
 };
 
 export default function PaymentsIndex({ payments, summary, filters }: Props) {
+    const { auth } = usePage<any>().props;
     const [search, setSearch] = useState(filters.search || '');
     const [date, setDate] = useState(filters.date || '');
     const [method, setMethod] = useState(filters.method || '');
+
+    const currentTotal = payments.data.reduce((sum, p) => sum + Number(p.amount), 0);
 
     function handleFilter(e?: React.FormEvent) {
         if (e) e.preventDefault();
@@ -39,16 +43,38 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                             View recorded payments, transaction receipts, and collection reports.
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href="/admin/payments/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Record Payment
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2 print:hidden">
+                        <Button
+                            variant="outline"
+                            onClick={() => window.print()}
+                            className="gap-2"
+                        >
+                            <Printer className="h-4 w-4" />
+                            Print Collection Report
+                        </Button>
+                        <Button asChild>
+                            <Link href="/admin/payments/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Record Payment
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
+                <PrintHeader
+                    institutionName={auth?.tenant?.name || 'Coaching Center'}
+                    reportTitle="Official Fee Collection & Accounting Report"
+                    subTitle={date ? `Collection Date: ${date}` : 'All Recorded Collections'}
+                    metaInfo={[
+                        { label: 'Date Filter', value: date || 'ALL DATES' },
+                        { label: 'Payment Method', value: method ? method.toUpperCase() : 'ALL METHODS' },
+                        { label: 'Report Total Amount', value: `৳${currentTotal.toLocaleString()}` },
+                        { label: 'Total Receipts Count', value: payments.data.length },
+                    ]}
+                />
+
                 {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2 print:hidden">
                     <div className="bg-card border rounded-xl p-4">
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total All-Time Collection</p>
                         <p className="mt-1 text-2xl font-bold text-green-600">৳{Number(summary.total_collected).toLocaleString()}</p>
@@ -60,7 +86,7 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                 </div>
 
                 {/* Filters */}
-                <form onSubmit={handleFilter} className="flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <form onSubmit={handleFilter} className="flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border print:hidden">
                     <div className="relative flex-1">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -113,7 +139,7 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                                     <th className="px-4 py-3 text-right font-medium">Amount Paid</th>
                                     <th className="px-4 py-3 text-center font-medium">Payment Method</th>
                                     <th className="px-4 py-3 text-left font-medium">Date</th>
-                                    <th className="px-4 py-3 text-right font-medium">Receipt</th>
+                                    <th className="px-4 py-3 text-right font-medium print:hidden">Receipt</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -128,7 +154,7 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                                 {payments.data.map((p) => (
                                     <tr key={p.id} className="hover:bg-muted/50 border-b last:border-b-0">
                                         <td className="px-4 py-3 font-mono font-bold text-xs text-primary">
-                                            {p.receipt?.receipt_number || '—'}
+                                             {p.receipt?.receipt_number || '—'}
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="font-medium">{p.student?.user?.name}</div>
@@ -149,7 +175,7 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                                         <td className="px-4 py-3 text-muted-foreground text-xs">
                                             {p.payment_date}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-3 text-right print:hidden">
                                             {p.receipt && (
                                                 <Button size="sm" variant="outline" asChild>
                                                     <Link href={`/admin/receipts/${p.receipt.id}`}>
@@ -164,6 +190,8 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                         </table>
                     </div>
                 </div>
+
+                <PrintSignatureFooter />
             </div>
         </>
     );

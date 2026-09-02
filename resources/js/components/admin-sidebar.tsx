@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     Award,
+    BarChart3,
     BookOpen,
     CalendarDays,
     ClipboardList,
@@ -85,6 +86,11 @@ export function AdminSidebar() {
             title: 'Payments',
             href: '/admin/payments',
             icon: Receipt,
+        },
+        {
+            title: 'Faculty Revenue',
+            href: '/admin/reports/teachers',
+            icon: BarChart3,
         },
     ];
 

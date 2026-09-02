@@ -2,6 +2,7 @@
 /bootstrap/ssr
 /node_modules
 # /public/build
+/.github
 /deploy-hostinger.zip
 /export-database.sql
 /public/fonts-manifest.dev.json
