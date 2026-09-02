@@ -31,14 +31,24 @@ export default function StudentEdit({ student, classes, assignedClassSubjectIds 
 
     const selectedClass = classes.find((c) => String(c.id) === String(data.academic_class_id));
 
+    function calculateTotalFeeForSubjects(subjectIds: number[], cls = selectedClass) {
+        if (!cls || !cls.class_subjects) return 0;
+        return cls.class_subjects
+            .filter((cs) => subjectIds.includes(cs.id))
+            .reduce((sum, cs) => sum + Number(cs.monthly_fee || 0), 0);
+    }
+
     function handleClassChange(classId: string) {
-        setData('academic_class_id', classId);
         const cls = classes.find((c) => String(c.id) === classId);
-        if (cls && cls.class_subjects) {
-            setData('class_subject_ids', cls.class_subjects.map((cs) => cs.id));
-        } else {
-            setData('class_subject_ids', []);
-        }
+        const allSubjectIds = cls && cls.class_subjects ? cls.class_subjects.map((cs) => cs.id) : [];
+        const calculatedFee = calculateTotalFeeForSubjects(allSubjectIds, cls);
+
+        setData((prev) => ({
+            ...prev,
+            academic_class_id: classId,
+            class_subject_ids: allSubjectIds,
+            monthly_fee: calculatedFee > 0 ? String(calculatedFee) : prev.monthly_fee,
+        }));
     }
 
     function toggleSubject(id: number) {
@@ -49,7 +59,13 @@ export default function StudentEdit({ student, classes, assignedClassSubjectIds 
         } else {
             current.push(id);
         }
-        setData('class_subject_ids', current);
+
+        const calculatedFee = calculateTotalFeeForSubjects(current);
+        setData((prev) => ({
+            ...prev,
+            class_subject_ids: current,
+            monthly_fee: calculatedFee > 0 ? String(calculatedFee) : prev.monthly_fee,
+        }));
     }
 
     function handleSubmit(e: FormEvent) {
@@ -223,19 +239,26 @@ export default function StudentEdit({ student, classes, assignedClassSubjectIds 
                                         return (
                                             <label
                                                 key={cs.id}
-                                                className={`flex items-center gap-2 p-2 rounded border text-sm cursor-pointer ${
+                                                className={`flex items-center justify-between gap-2 p-2.5 rounded border text-sm cursor-pointer transition-all ${
                                                     isChecked
                                                         ? 'bg-primary/10 border-primary text-primary font-medium'
                                                         : 'hover:bg-muted/50 border-input'
                                                 }`}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChecked}
-                                                    onChange={() => toggleSubject(cs.id)}
-                                                    className="rounded border-input text-primary focus:ring-primary h-4 w-4"
-                                                />
-                                                <span>{cs.subject?.name}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={() => toggleSubject(cs.id)}
+                                                        className="rounded border-input text-primary focus:ring-primary h-4 w-4"
+                                                    />
+                                                    <span>{cs.subject?.name}</span>
+                                                </div>
+                                                {Number(cs.monthly_fee) > 0 && (
+                                                    <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${isChecked ? 'bg-primary/20 text-primary font-bold' : 'bg-muted text-muted-foreground'}`}>
+                                                        ৳{Number(cs.monthly_fee).toLocaleString()}
+                                                    </span>
+                                                )}
                                             </label>
                                         );
                                     })}

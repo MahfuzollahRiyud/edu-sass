@@ -27,12 +27,14 @@ class TeacherReportController extends Controller
             $subjectBreakdowns = $teacher->classSubjects->map(function ($cs) use (&$allStudentIds, &$totalMonthlyFee) {
                 $enrolledStudents = $cs->students;
                 $studentCount = $enrolledStudents->count();
-                $subjectFeeSum = $enrolledStudents->sum('monthly_fee');
+                $subjectFeeSum = (float) $cs->monthly_fee > 0
+                    ? $studentCount * (float) $cs->monthly_fee
+                    : (float) $enrolledStudents->sum('monthly_fee');
 
                 foreach ($enrolledStudents as $student) {
                     $allStudentIds->push($student->id);
-                    $totalMonthlyFee += (float) $student->monthly_fee;
                 }
+                $totalMonthlyFee += $subjectFeeSum;
 
                 return [
                     'id' => $cs->id,

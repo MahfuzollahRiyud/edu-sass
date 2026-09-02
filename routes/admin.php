@@ -32,6 +32,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         Route::get('classes/{class}/subjects', [ClassSubjectController::class, 'index'])->name('classes.subjects.index');
         Route::post('classes/{class}/subjects', [ClassSubjectController::class, 'store'])->name('classes.subjects.store');
+        Route::patch('classes/{class}/subjects/{classSubject}', [ClassSubjectController::class, 'update'])->name('classes.subjects.update');
         Route::delete('classes/{class}/subjects/{classSubject}', [ClassSubjectController::class, 'destroy'])->name('classes.subjects.destroy');
 
         // Teachers

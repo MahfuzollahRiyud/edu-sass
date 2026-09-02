@@ -17,6 +17,11 @@ class ClassSubject extends Model
         'tenant_id',
         'academic_class_id',
         'subject_id',
+        'monthly_fee',
+    ];
+
+    protected $casts = [
+        'monthly_fee' => 'float',
     ];
 
     public function academicClass(): BelongsTo
