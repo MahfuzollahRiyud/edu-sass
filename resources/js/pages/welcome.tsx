@@ -13,6 +13,8 @@ import {
     Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import PublicFooter from '@/components/public-footer';
+import PublicHeader from '@/components/public-header';
 import type { SharedData } from '@/types';
 
 export default function Welcome() {
@@ -22,52 +24,7 @@ export default function Welcome() {
         <>
             <Head title="Welcome — Coaching & Education SaaS" />
             <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
-                {/* Header */}
-                <header className="border-b border-border/60 bg-background/95 backdrop-blur sticky top-0 z-50">
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                            <img src="/images/logo.webp" alt="EduFlow" className="size-9 object-contain rounded-lg shadow-sm border border-border/60 bg-white dark:bg-slate-900 p-0.5" />
-                            <span className="font-bold text-lg tracking-tight">EduFlow</span>
-                        </div>
-
-                        <div className="flex items-center gap-2.5">
-                            {auth?.user ? (
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground hidden sm:inline-block">
-                                        Signed in as <strong className="text-foreground">{auth.user.name}</strong>
-                                    </span>
-                                    <Button size="sm" asChild>
-                                        <Link href="/dashboard">
-                                            Go to Dashboard
-                                            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                                        </Link>
-                                    </Button>
-                                    <Button size="sm" variant="outline" asChild>
-                                        <Link href="/logout" method="post" as="button">
-                                            <LogOut className="mr-1.5 h-3.5 w-3.5" />
-                                            Log Out
-                                        </Link>
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <Button size="sm" variant="outline" asChild>
-                                        <Link href="/login">
-                                            <LogIn className="mr-1.5 h-3.5 w-3.5" />
-                                            Sign In
-                                        </Link>
-                                    </Button>
-                                    <Button size="sm" asChild className="gap-1.5 shadow-sm">
-                                        <Link href="/register-institution">
-                                            <Building2 className="h-3.5 w-3.5" />
-                                            Register Institute
-                                        </Link>
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </header>
+                <PublicHeader currentPage="home" />
 
                 {/* Hero */}
                 <main className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center space-y-8 flex-1 flex flex-col justify-center">
@@ -113,6 +70,12 @@ export default function Welcome() {
                                     <Link href="/login">
                                         <LogIn className="mr-2 h-4 w-4" />
                                         Sign In to Portal
+                                    </Link>
+                                </Button>
+                                <Button size="lg" variant="ghost" asChild className="px-5 text-sm font-medium">
+                                    <Link href="/about">
+                                        How It Works
+                                        <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                                     </Link>
                                 </Button>
                             </div>
@@ -161,12 +124,30 @@ export default function Welcome() {
                             </p>
                         </div>
                     </div>
+
+                    {/* Step by step prompt */}
+                    <div className="pt-6 max-w-xl mx-auto w-full">
+                        <Link
+                            href="/about"
+                            className="flex items-center justify-between p-4 rounded-xl border border-border/70 bg-muted/40 hover:bg-muted/70 hover:border-primary/40 transition-all group text-left"
+                        >
+                            <div className="space-y-0.5">
+                                <div className="text-xs font-semibold text-primary uppercase tracking-wider">
+                                    Getting Started Guide
+                                </div>
+                                <div className="text-sm font-medium text-foreground">
+                                    জানতে চান কীভাবে ধাপে ধাপে আপনার কোচিং শুরু করবেন?
+                                </div>
+                            </div>
+                            <div className="size-8 rounded-full bg-background border flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:border-primary/40 transition-colors shrink-0">
+                                <ArrowRight className="h-4 w-4" />
+                            </div>
+                        </Link>
+                    </div>
                 </main>
 
                 {/* Footer */}
-                <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-                    © {new Date().getFullYear()} EduSaaS. Multi-Tenant Education & Coaching Management System.
-                </footer>
+                <PublicFooter />
             </div>
         </>
     );

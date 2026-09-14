@@ -4,6 +4,7 @@ use App\Http\Controllers\InstitutionRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+Route::inertia('/about', 'about')->name('about');
 
 // Institution Self-Registration (Public)
 Route::get('register-institution', [InstitutionRegistrationController::class, 'create'])
