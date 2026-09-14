@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import type { FeeInvoice } from '@/types';
-import type { FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 
 type Props = {
     selectedInvoice: FeeInvoice | null;
@@ -13,6 +13,7 @@ type Props = {
 
 export default function PaymentCreate({ selectedInvoice, dueInvoices }: Props) {
     const today = new Date().toISOString().split('T')[0];
+    const [filterText, setFilterText] = useState('');
 
     const initialInvoiceId = selectedInvoice?.id ? String(selectedInvoice.id) : dueInvoices[0]?.id ? String(dueInvoices[0].id) : '';
     const initialDueAmount = selectedInvoice ? String(selectedInvoice.due_amount) : dueInvoices[0] ? String(dueInvoices[0].due_amount) : '0';
@@ -27,6 +28,17 @@ export default function PaymentCreate({ selectedInvoice, dueInvoices }: Props) {
     });
 
     const activeInvoice = dueInvoices.find((inv) => String(inv.id) === data.fee_invoice_id) || selectedInvoice;
+
+    const filteredInvoices = dueInvoices.filter((inv) => {
+        if (!filterText) return true;
+        const q = filterText.toLowerCase();
+        return (
+            inv.student?.user?.name?.toLowerCase().includes(q) ||
+            inv.student?.student_id?.toLowerCase().includes(q) ||
+            inv.title?.toLowerCase().includes(q) ||
+            inv.fee_type?.name?.toLowerCase().includes(q)
+        );
+    });
 
     function handleInvoiceChange(invoiceId: string) {
         setData('fee_invoice_id', invoiceId);
@@ -66,7 +78,17 @@ export default function PaymentCreate({ selectedInvoice, dueInvoices }: Props) {
                 ) : (
                     <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="fee_invoice_id">Select Unpaid / Partial Invoice *</Label>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="fee_invoice_id">Select Unpaid / Partial Invoice *</Label>
+                                <span className="text-xs text-muted-foreground">{filteredInvoices.length} invoice(s) found</span>
+                            </div>
+                            <Input
+                                type="search"
+                                placeholder="Search by student name, ID, or fee title..."
+                                value={filterText}
+                                onChange={(e) => setFilterText(e.target.value)}
+                                className="h-8 text-xs mb-1"
+                            />
                             <select
                                 id="fee_invoice_id"
                                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
@@ -74,9 +96,10 @@ export default function PaymentCreate({ selectedInvoice, dueInvoices }: Props) {
                                 onChange={(e) => handleInvoiceChange(e.target.value)}
                                 required
                             >
-                                {dueInvoices.map((inv) => (
+                                <option value="">-- Select an invoice to record payment --</option>
+                                {filteredInvoices.map((inv) => (
                                     <option key={inv.id} value={inv.id}>
-                                        {inv.student?.user?.name} ({inv.student?.student_id}) — {inv.title} (Due: ৳{Number(inv.due_amount).toLocaleString()})
+                                        [{inv.fee_type?.name || 'Fee'}] {inv.student?.user?.name} ({inv.student?.student_id}) — {inv.title} (Due: ৳{Number(inv.due_amount).toLocaleString()})
                                     </option>
                                 ))}
                             </select>
@@ -84,7 +107,21 @@ export default function PaymentCreate({ selectedInvoice, dueInvoices }: Props) {
                         </div>
 
                         {activeInvoice && (
-                            <div className="bg-muted/40 p-4 rounded-lg border space-y-1 text-xs">
+                            <div className="bg-muted/40 p-4 rounded-lg border space-y-1.5 text-xs">
+                                <div className="flex justify-between font-medium pb-1 border-b">
+                                    <span>{activeInvoice.student?.user?.name} ({activeInvoice.student?.student_id})</span>
+                                    <span className="text-primary font-bold">[{activeInvoice.fee_type?.name}]</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Invoice Title:</span>
+                                    <span className="font-medium">{activeInvoice.title}</span>
+                                </div>
+                                {activeInvoice.month && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Billing Month:</span>
+                                        <span className="font-mono">{activeInvoice.month}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Total Invoice Amount:</span>
                                     <span className="font-mono font-medium">৳{Number(activeInvoice.amount).toLocaleString()}</span>

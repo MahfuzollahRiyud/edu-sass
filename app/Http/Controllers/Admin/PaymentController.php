@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FeeInvoice;
+use App\Models\FeeType;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\Student;
@@ -21,33 +22,44 @@ class PaymentController extends Controller
         $search = $request->input('search');
         $date = $request->input('date');
         $method = $request->input('method');
+        $feeTypeId = $request->input('fee_type_id');
 
         $payments = Payment::with(['student.user', 'student.academicClass', 'invoice.feeType', 'receipt', 'receiver'])
             ->when($search, function ($query, $search) {
                 $query->whereHas('student', function ($sq) use ($search) {
                     $sq->where('student_id', 'LIKE', "%{$search}%")
                         ->orWhereHas('user', fn ($uq) => $uq->where('name', 'LIKE', "%{$search}%"));
-                })->orWhereHas('receipt', fn ($rq) => $rq->where('receipt_number', 'LIKE', "%{$search}%"));
+                })->orWhereHas('receipt', fn ($rq) => $rq->where('receipt_number', 'LIKE', "%{$search}%"))
+                  ->orWhereHas('invoice', fn ($iq) => $iq->where('title', 'LIKE', "%{$search}%"));
             })
             ->when($date, fn ($q) => $q->where('payment_date', $date))
             ->when($method, fn ($q) => $q->where('payment_method', $method))
+            ->when($feeTypeId, fn ($q) => $q->whereHas('invoice', fn ($iq) => $iq->where('fee_type_id', $feeTypeId)))
             ->latest()
             ->paginate(20)
             ->withQueryString();
 
         $totalCollected = Payment::sum('amount');
         $todayCollected = Payment::where('payment_date', date('Y-m-d'))->sum('amount');
+        $monthlyCollected = Payment::whereHas('invoice.feeType', fn ($q) => $q->where('name', 'LIKE', '%Monthly%'))->sum('amount');
+        $admissionCollected = Payment::whereHas('invoice.feeType', fn ($q) => $q->where('name', 'LIKE', '%Admission%'))->sum('amount');
+
+        $feeTypes = FeeType::where('is_active', true)->get();
 
         return Inertia::render('admin/payments/index', [
             'payments' => $payments,
+            'feeTypes' => $feeTypes,
             'summary' => [
                 'total_collected' => $totalCollected,
                 'today_collected' => $todayCollected,
+                'monthly_collected' => $monthlyCollected,
+                'admission_collected' => $admissionCollected,
             ],
             'filters' => [
                 'search' => $search,
                 'date' => $date,
                 'method' => $method,
+                'fee_type_id' => $feeTypeId,
             ],
         ]);
     }

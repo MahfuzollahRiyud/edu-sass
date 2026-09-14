@@ -89,13 +89,20 @@ class StudentController extends Controller
             'monthly_fee' => ['required', 'numeric', 'min:0'],
             'class_subject_ids' => ['required', 'array', 'min:1'],
             'class_subject_ids.*' => ['exists:class_subjects,id'],
-            // Optional admission fee payment
+            // Optional fee billing & initial payments
             'admission_fee' => ['nullable', 'numeric', 'min:0'],
             'admission_fee_paid' => ['nullable', 'numeric', 'min:0'],
+            'include_first_month_fee' => ['nullable', 'boolean'],
+            'first_month' => ['nullable', 'string', 'max:7'],
+            'first_month_fee' => ['nullable', 'numeric', 'min:0'],
+            'first_month_fee_paid' => ['nullable', 'numeric', 'min:0'],
             'payment_method' => ['nullable', 'string', 'in:cash,bank,other'],
         ]);
 
-        DB::transaction(function () use ($validated, $tenantId, $request) {
+        $receiptsGenerated = 0;
+        $totalPaidRecorded = 0;
+
+        DB::transaction(function () use ($validated, $tenantId, $request, &$receiptsGenerated, &$totalPaidRecorded) {
             $studentId = StudentIdGenerator::generate($tenantId);
 
             $user = User::create([
@@ -133,8 +140,8 @@ class StudentController extends Controller
                 ]);
             }
 
-            // Create Admission Fee invoice if provided
-            if (! empty($validated['admission_fee']) && $validated['admission_fee'] > 0) {
+            // 1. Create Admission Fee invoice if provided
+            if (! empty($validated['admission_fee']) && (float) $validated['admission_fee'] > 0) {
                 $admissionFeeType = FeeType::firstOrCreate(
                     ['tenant_id' => $tenantId, 'name' => 'Admission Fee'],
                     ['is_recurring' => false, 'default_amount' => $validated['admission_fee'], 'is_active' => true]
@@ -151,7 +158,7 @@ class StudentController extends Controller
                     $status = 'partial';
                 }
 
-                $invoice = FeeInvoice::create([
+                $admissionInvoice = FeeInvoice::create([
                     'tenant_id' => $tenantId,
                     'student_id' => $student->id,
                     'fee_type_id' => $admissionFeeType->id,
@@ -167,7 +174,7 @@ class StudentController extends Controller
                 if ($paidAmount > 0) {
                     $payment = Payment::create([
                         'tenant_id' => $tenantId,
-                        'fee_invoice_id' => $invoice->id,
+                        'fee_invoice_id' => $admissionInvoice->id,
                         'student_id' => $student->id,
                         'amount' => $paidAmount,
                         'payment_method' => $validated['payment_method'] ?? 'cash',
@@ -181,11 +188,81 @@ class StudentController extends Controller
                         'payment_id' => $payment->id,
                         'receipt_number' => ReceiptNumberGenerator::generate($tenantId),
                     ]);
+
+                    $receiptsGenerated++;
+                    $totalPaidRecorded += $paidAmount;
+                }
+            }
+
+            // 2. Create First Month Fee invoice if enabled
+            $includeFirstMonth = filter_var($validated['include_first_month_fee'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $firstMonthFee = isset($validated['first_month_fee']) ? (float) $validated['first_month_fee'] : 0;
+
+            if ($includeFirstMonth && $firstMonthFee > 0) {
+                $monthlyFeeType = FeeType::firstOrCreate(
+                    ['tenant_id' => $tenantId, 'name' => 'Monthly Fee'],
+                    ['is_recurring' => true, 'default_amount' => 0, 'is_active' => true]
+                );
+
+                $month = ! empty($validated['first_month'])
+                    ? $validated['first_month']
+                    : date('Y-m', strtotime($validated['admission_date']));
+                $monthName = date('F Y', strtotime($month . '-01'));
+
+                $monthlyPaidAmount = min($firstMonthFee, (float) ($validated['first_month_fee_paid'] ?? 0));
+                $monthlyDueAmount = max(0, $firstMonthFee - $monthlyPaidAmount);
+
+                $monthlyStatus = 'unpaid';
+                if ($monthlyDueAmount == 0) {
+                    $monthlyStatus = 'paid';
+                } elseif ($monthlyPaidAmount > 0) {
+                    $monthlyStatus = 'partial';
+                }
+
+                $monthlyInvoice = FeeInvoice::create([
+                    'tenant_id' => $tenantId,
+                    'student_id' => $student->id,
+                    'fee_type_id' => $monthlyFeeType->id,
+                    'title' => "{$monthName} Monthly Fee — {$student->name}",
+                    'amount' => $firstMonthFee,
+                    'paid_amount' => $monthlyPaidAmount,
+                    'due_amount' => $monthlyDueAmount,
+                    'status' => $monthlyStatus,
+                    'month' => $month,
+                    'issue_date' => $validated['admission_date'],
+                    'notes' => 'First month fee generated at admission time',
+                ]);
+
+                if ($monthlyPaidAmount > 0) {
+                    $monthlyPayment = Payment::create([
+                        'tenant_id' => $tenantId,
+                        'fee_invoice_id' => $monthlyInvoice->id,
+                        'student_id' => $student->id,
+                        'amount' => $monthlyPaidAmount,
+                        'payment_method' => $validated['payment_method'] ?? 'cash',
+                        'payment_date' => $validated['admission_date'],
+                        'received_by' => $request->user()->id,
+                        'notes' => "{$monthName} Monthly fee initial payment",
+                    ]);
+
+                    Receipt::create([
+                        'tenant_id' => $tenantId,
+                        'payment_id' => $monthlyPayment->id,
+                        'receipt_number' => ReceiptNumberGenerator::generate($tenantId),
+                    ]);
+
+                    $receiptsGenerated++;
+                    $totalPaidRecorded += $monthlyPaidAmount;
                 }
             }
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Student admitted successfully.']);
+        $toastMessage = 'Student admitted successfully.';
+        if ($totalPaidRecorded > 0) {
+            $toastMessage .= " Initial collection of ৳" . number_format($totalPaidRecorded) . " recorded ({$receiptsGenerated} receipt(s)).";
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $toastMessage]);
 
         return redirect()->route('admin.students.index');
     }

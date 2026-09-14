@@ -3,33 +3,38 @@ import { Download, Plus, Printer, Receipt, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PrintHeader, PrintSignatureFooter } from '@/components/print-header';
-import type { PaginatedData, Payment } from '@/types';
+import type { FeeType, PaginatedData, Payment } from '@/types';
 import { useState } from 'react';
 
 type Props = {
     payments: PaginatedData<Payment>;
+    feeTypes?: FeeType[];
     summary: {
         total_collected: number;
         today_collected: number;
+        monthly_collected?: number;
+        admission_collected?: number;
     };
     filters: {
         search?: string;
         date?: string;
         method?: string;
+        fee_type_id?: string;
     };
 };
 
-export default function PaymentsIndex({ payments, summary, filters }: Props) {
+export default function PaymentsIndex({ payments, feeTypes = [], summary, filters }: Props) {
     const { auth } = usePage<any>().props;
     const [search, setSearch] = useState(filters.search || '');
     const [date, setDate] = useState(filters.date || '');
     const [method, setMethod] = useState(filters.method || '');
+    const [feeTypeId, setFeeTypeId] = useState(filters.fee_type_id || '');
 
     const currentTotal = payments.data.reduce((sum, p) => sum + Number(p.amount), 0);
 
     function handleFilter(e?: React.FormEvent) {
         if (e) e.preventDefault();
-        router.get('/admin/payments', { search, date, method }, { preserveState: true });
+        router.get('/admin/payments', { search, date, method, fee_type_id: feeTypeId }, { preserveState: true });
     }
 
     return (
@@ -74,7 +79,7 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                 />
 
                 {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 print:hidden">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
                     <div className="bg-card border rounded-xl p-4">
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total All-Time Collection</p>
                         <p className="mt-1 text-2xl font-bold text-green-600">৳{Number(summary.total_collected).toLocaleString()}</p>
@@ -82,6 +87,14 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                     <div className="bg-card border rounded-xl p-4">
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Today's Collection</p>
                         <p className="mt-1 text-2xl font-bold text-primary">৳{Number(summary.today_collected).toLocaleString()}</p>
+                    </div>
+                    <div className="bg-card border rounded-xl p-4">
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Monthly Fees Collected</p>
+                        <p className="mt-1 text-2xl font-bold text-blue-600">৳{Number(summary.monthly_collected || 0).toLocaleString()}</p>
+                    </div>
+                    <div className="bg-card border rounded-xl p-4">
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Admission Fees Collected</p>
+                        <p className="mt-1 text-2xl font-bold text-amber-600">৳{Number(summary.admission_collected || 0).toLocaleString()}</p>
                     </div>
                 </div>
 
@@ -91,7 +104,7 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="search"
-                            placeholder="Search by student name, ID, or receipt #..."
+                            placeholder="Search by student name, ID, fee title, or receipt #..."
                             className="pl-9"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -104,16 +117,30 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                         value={date}
                         onChange={(e) => {
                             setDate(e.target.value);
-                            router.get('/admin/payments', { search, date: e.target.value, method }, { preserveState: true });
+                            router.get('/admin/payments', { search, date: e.target.value, method, fee_type_id: feeTypeId }, { preserveState: true });
                         }}
                     />
 
                     <select
-                        className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm sm:w-44"
+                        className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm sm:w-40"
+                        value={feeTypeId}
+                        onChange={(e) => {
+                            setFeeTypeId(e.target.value);
+                            router.get('/admin/payments', { search, date, method, fee_type_id: e.target.value }, { preserveState: true });
+                        }}
+                    >
+                        <option value="">All Fee Types</option>
+                        {feeTypes.map((ft) => (
+                            <option key={ft.id} value={ft.id}>{ft.name}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm sm:w-36"
                         value={method}
                         onChange={(e) => {
                             setMethod(e.target.value);
-                            router.get('/admin/payments', { search, date, method: e.target.value }, { preserveState: true });
+                            router.get('/admin/payments', { search, date, method: e.target.value, fee_type_id: feeTypeId }, { preserveState: true });
                         }}
                     >
                         <option value="">All Methods</option>
@@ -161,8 +188,26 @@ export default function PaymentsIndex({ payments, summary, filters }: Props) {
                                             <div className="text-muted-foreground text-xs font-mono">{p.student?.student_id}</div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="font-medium text-xs">{p.invoice?.title}</div>
-                                            <div className="text-muted-foreground text-xs">{p.invoice?.fee_type?.name}</div>
+                                            <div className="font-medium text-xs flex items-center gap-1.5 flex-wrap">
+                                                <span>{p.invoice?.title}</span>
+                                                {p.invoice?.fee_type?.name?.toLowerCase().includes('monthly') ? (
+                                                    <span className="inline-flex rounded bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-1.5 py-0.5 text-[10px] font-semibold">
+                                                        Monthly Fee
+                                                    </span>
+                                                ) : p.invoice?.fee_type?.name?.toLowerCase().includes('admission') ? (
+                                                    <span className="inline-flex rounded bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 px-1.5 py-0.5 text-[10px] font-semibold">
+                                                        Admission Fee
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex rounded bg-muted text-muted-foreground px-1.5 py-0.5 text-[10px] font-medium">
+                                                        {p.invoice?.fee_type?.name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-muted-foreground text-[11px] mt-0.5">
+                                                {p.student?.academic_class?.name ? `Class: ${p.student.academic_class.name}` : ''}
+                                                {p.invoice?.month ? ` • Month: ${p.invoice.month}` : ''}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono font-bold text-green-600">
                                             ৳{Number(p.amount).toLocaleString()}
