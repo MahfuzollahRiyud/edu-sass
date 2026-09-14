@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { BookOpen, GraduationCap, Plus, Power, Settings2, Trash2 } from 'lucide-react';
+import { BookOpen, GraduationCap, Plus, Power, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AcademicClass, PaginatedData } from '@/types';
+import ImportCurriculumDialog, { type PresetItem } from './ImportCurriculumDialog';
 
 type Props = {
     classes: PaginatedData<AcademicClass>;
+    curriculumPresets?: Record<string, PresetItem>;
 };
 
-export default function ClassesIndex({ classes }: Props) {
+export default function ClassesIndex({ classes, curriculumPresets = {} }: Props) {
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+
     return (
         <>
             <Head title="Academic Classes" />
@@ -19,13 +24,49 @@ export default function ClassesIndex({ classes }: Props) {
                             Manage classes, sections, and subject assignments.
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href="/admin/classes/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Class
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        {Object.keys(curriculumPresets).length > 0 && (
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsImportDialogOpen(true)}
+                                className="gap-2 border-primary/40 hover:bg-primary/10 hover:border-primary text-primary"
+                            >
+                                <Sparkles className="h-4 w-4" />
+                                Import BD Curriculum
+                            </Button>
+                        )}
+                        <Button asChild>
+                            <Link href="/admin/classes/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Class
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
+
+                {classes.data.length === 0 && Object.keys(curriculumPresets).length > 0 && (
+                    <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-6 text-center sm:p-8">
+                        <Sparkles className="mx-auto h-10 w-10 text-primary" />
+                        <h3 className="mt-3 text-lg font-semibold text-foreground">
+                            Get Started with Bangladeshi Curriculum
+                        </h3>
+                        <p className="mt-1 max-w-lg mx-auto text-sm text-muted-foreground">
+                            Instantly generate standard NCTB classes (Classes 6–10, Junior &amp; SSC Science, Business Studies, Humanities) and attach their standard subjects with 1 click.
+                        </p>
+                        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                            <Button onClick={() => setIsImportDialogOpen(true)} className="gap-2">
+                                <Sparkles className="h-4 w-4" />
+                                1-Click Import (Class 6 – 10)
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/classes/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Manually
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="bg-card border-sidebar-border/70 dark:border-sidebar-border rounded-xl border">
                     <div className="overflow-x-auto">
@@ -105,6 +146,12 @@ export default function ClassesIndex({ classes }: Props) {
                         </table>
                     </div>
                 </div>
+
+                <ImportCurriculumDialog
+                    open={isImportDialogOpen}
+                    onOpenChange={setIsImportDialogOpen}
+                    presets={curriculumPresets}
+                />
             </div>
         </>
     );

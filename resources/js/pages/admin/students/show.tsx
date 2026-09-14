@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, Calendar, CheckCircle2, CreditCard, Edit, GraduationCap, LogIn, Mail, MapPin, Phone, Receipt, User, UserCheck, XCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle2, CreditCard, Edit, GraduationCap, LogIn, Mail, MapPin, Phone, Plus, Receipt, User, UserCheck, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Student } from '@/types';
 

@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // Classes & Subjects
+        Route::post('classes/import-curriculum', [AcademicClassController::class, 'importCurriculum'])->name('classes.import-curriculum');
         Route::resource('classes', AcademicClassController::class);
         Route::patch('classes/{class}/toggle-status', [AcademicClassController::class, 'toggleStatus'])->name('classes.toggle-status');
 

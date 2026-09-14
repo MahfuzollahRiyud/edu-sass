@@ -30,6 +30,7 @@ export type ClassSubject = {
     id: number;
     academic_class_id: number;
     subject_id: number;
+    monthly_fee?: number | string | null;
     display_name?: string;
     academic_class?: AcademicClass;
     subject?: Subject;

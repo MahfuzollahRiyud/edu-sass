@@ -76,11 +76,10 @@ export default function TeacherExamsIndex({ exams }: Props) {
                                             </td>
                                             <td className="px-4 py-3.5 text-center">
                                                 <span
-                                                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                                        exam.is_published
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                            : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
-                                                    }`}
+                                                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${exam.is_published
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                                                        }`}
                                                 >
                                                     {exam.is_published ? 'Published' : 'Draft'}
                                                 </span>

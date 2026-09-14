@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicClass;
+use App\Services\CurriculumPresetService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +12,7 @@ use Inertia\Response;
 
 class AcademicClassController extends Controller
 {
-    public function index(): Response
+    public function index(CurriculumPresetService $presetService): Response
     {
         $classes = AcademicClass::withCount(['students', 'subjects'])
             ->orderBy('sort_order')
@@ -20,7 +21,32 @@ class AcademicClassController extends Controller
 
         return Inertia::render('admin/classes/index', [
             'classes' => $classes,
+            'curriculumPresets' => $presetService->getAvailablePresets(),
         ]);
+    }
+
+    public function importCurriculum(Request $request, CurriculumPresetService $presetService): RedirectResponse
+    {
+        $tenantId = app('current_tenant_id');
+
+        $validated = $request->validate([
+            'selected_classes' => ['required', 'array', 'min:1'],
+            'selected_classes.*' => ['required', 'string'],
+        ], [
+            'selected_classes.required' => 'Please select at least one class or group to import.',
+            'selected_classes.min' => 'Please select at least one class or group to import.',
+        ]);
+
+        $stats = $presetService->import($tenantId, $validated['selected_classes']);
+
+        $message = "Curriculum imported successfully ({$stats['classes_created']} new classes, {$stats['subjects_created']} new subjects, {$stats['mappings_created']} subject assignments).";
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $message,
+        ]);
+
+        return redirect()->route('admin.classes.index');
     }
 
     public function create(): Response
