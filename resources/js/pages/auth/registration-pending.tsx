@@ -12,7 +12,7 @@ type Props = {
 export default function RegistrationPending({ institution }: Props) {
     return (
         <>
-            <Head title="Registration Received — EduSaaS" />
+            <Head title="Registration Received — EduFlow" />
             <div className="min-h-screen bg-muted/30 py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center">
                 <div className="max-w-md w-full text-center space-y-6">
                     {/* Icon card */}
@@ -30,7 +30,7 @@ export default function RegistrationPending({ institution }: Props) {
                                 <strong className="text-foreground">
                                     {institution?.name || 'your coaching center'}
                                 </strong>{' '}
-                                on the EduSaaS platform.
+                                on the EduFlow platform.
                             </p>
                         </div>
 

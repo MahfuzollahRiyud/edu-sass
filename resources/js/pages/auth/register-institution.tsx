@@ -2,6 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Building2, CheckCircle2, GraduationCap, Lock, Mail, MapPin, Phone, ShieldCheck, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PasswordInput from '@/components/password-input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import InputError from '@/components/input-error';
@@ -37,7 +38,7 @@ export default function RegisterInstitution() {
 
     return (
         <>
-            <Head title="Register Coaching Institution — EduSaaS" />
+            <Head title="Register Coaching Institution — EduFlow" />
             <div className="min-h-screen bg-muted/30 py-6 sm:py-10 px-4 sm:px-6 lg:px-12 flex flex-col justify-center">
                 {/* Wide desktop container */}
                 <div className="max-w-5xl mx-auto w-full space-y-6">
@@ -253,11 +254,10 @@ export default function RegisterInstitution() {
                                                 Password <span className="text-destructive">*</span>
                                             </Label>
                                             <div className="relative">
-                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input
+                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                                                <PasswordInput
                                                     id="admin_password"
                                                     name="admin_password"
-                                                    type="password"
                                                     value={data.admin_password}
                                                     onChange={(e) => setData('admin_password', e.target.value)}
                                                     placeholder="Minimum 8 characters"
@@ -273,11 +273,10 @@ export default function RegisterInstitution() {
                                                 Confirm Password <span className="text-destructive">*</span>
                                             </Label>
                                             <div className="relative">
-                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input
+                                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                                                <PasswordInput
                                                     id="admin_password_confirmation"
                                                     name="admin_password_confirmation"
-                                                    type="password"
                                                     value={data.admin_password_confirmation}
                                                     onChange={(e) => setData('admin_password_confirmation', e.target.value)}
                                                     placeholder="Repeat password"
@@ -310,7 +309,7 @@ export default function RegisterInstitution() {
                     </div>
 
                     <p className="text-center text-xs text-muted-foreground">
-                        © {new Date().getFullYear()} EduSaaS Platform. All rights reserved.
+                        © {new Date().getFullYear()} EduFlow. All rights reserved.
                     </p>
                 </div>
             </div>

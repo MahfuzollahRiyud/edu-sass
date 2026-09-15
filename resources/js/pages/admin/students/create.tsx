@@ -1,6 +1,7 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PasswordInput from '@/components/password-input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import type { AcademicClass, FeeType } from '@/types';
@@ -170,9 +171,8 @@ export default function StudentCreate({ classes, feeTypes }: Props) {
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="space-y-2">
                                 <Label htmlFor="password">Login Password *</Label>
-                                <Input
+                                <PasswordInput
                                     id="password"
-                                    type="password"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
                                     placeholder="Min 8 characters"

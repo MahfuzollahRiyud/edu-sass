@@ -8,7 +8,7 @@ type PrintHeaderProps = {
 };
 
 export function PrintHeader({
-    institutionName = 'EduSaaS Management System',
+    institutionName = 'EduFlow Management System',
     reportTitle,
     subTitle,
     metaInfo = [],

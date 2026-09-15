@@ -123,7 +123,7 @@ export default function AboutPage() {
 
     return (
         <>
-            <Head title="About & How It Works — EduFlow SaaS" />
+            <Head title="About & How It Works — EduFlow" />
             <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
                 <PublicHeader currentPage="about" />
 

@@ -88,7 +88,7 @@ export default function TenantsIndex({ tenants, currentFilter, counts }: Props) 
                 </div>
 
                 <PrintHeader
-                    institutionName="EduSaaS Super Admin Central Portal"
+                    institutionName="EduFlow Super Admin Central Portal"
                     reportTitle="Coaching Centers & Institutions Directory"
                     metaInfo={[
                         { label: 'Filter', value: currentFilter ? currentFilter.toUpperCase() : 'ALL' },

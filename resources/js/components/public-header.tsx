@@ -33,11 +33,8 @@ export default function PublicHeader({ currentPage = 'home' }: PublicHeaderProps
                             alt="EduFlow"
                             className="size-9 object-contain rounded-lg shadow-sm border border-border/60 bg-white dark:bg-slate-900 p-0.5 group-hover:scale-105 transition-transform"
                         />
-                        <span className="font-bold text-lg tracking-tight flex items-center gap-1.5">
+                        <span className="font-bold text-lg tracking-tight">
                             EduFlow
-                            <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 hidden sm:inline-block">
-                                SaaS
-                            </span>
                         </span>
                     </Link>
 

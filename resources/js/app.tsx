@@ -12,7 +12,7 @@ import StudentLayout from '@/layouts/student-layout';
 import SuperAdminLayout from '@/layouts/super-admin-layout';
 import TeacherLayout from '@/layouts/teacher-layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'EduSaaS';
+const appName = import.meta.env.VITE_APP_NAME || 'EduFlow';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

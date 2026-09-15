@@ -14,7 +14,7 @@ export default function PublicFooter() {
                                 alt="EduFlow"
                                 className="size-8 object-contain rounded-lg shadow-xs border border-border/60 bg-white dark:bg-slate-900 p-0.5"
                             />
-                            <span className="font-bold text-base text-foreground tracking-tight">EduFlow SaaS</span>
+                            <span className="font-bold text-base text-foreground tracking-tight">EduFlow</span>
                         </div>
                         <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
                             A high-performance, multi-tenant academic and financial management platform purpose-built for coaching centers, academies, and private education institutions.
@@ -73,7 +73,7 @@ export default function PublicFooter() {
                 </div>
 
                 <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                    <p>© {new Date().getFullYear()} EduFlow SaaS. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} EduFlow. All rights reserved.</p>
                     <p className="text-[11px]">
                         Multi-Tenant Education & Coaching Management System.
                     </p>

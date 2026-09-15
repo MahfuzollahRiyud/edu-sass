@@ -22,7 +22,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Welcome — Coaching & Education SaaS" />
+            <Head title="EduFlow — Coaching & Education Management" />
             <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
                 <PublicHeader currentPage="home" />
 

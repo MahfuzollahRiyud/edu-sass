@@ -1,6 +1,7 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PasswordInput from '@/components/password-input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import type { FormEvent } from 'react';
@@ -161,9 +162,8 @@ export default function TenantsCreate() {
                             <Label htmlFor="admin_password">
                                 Admin Password *
                             </Label>
-                            <Input
+                            <PasswordInput
                                 id="admin_password"
-                                type="password"
                                 value={data.admin_password}
                                 onChange={(e) =>
                                     setData('admin_password', e.target.value)

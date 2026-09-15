@@ -3,6 +3,7 @@ import { KeyRound, ShieldCheck, UserCheck } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PasswordInput from '@/components/password-input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import type { Tenant, User } from '@/types';
@@ -164,9 +165,8 @@ export default function TenantsEdit({ tenant }: Props) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="newPassword">New Password (min 8 chars)</Label>
-                                    <Input
+                                    <PasswordInput
                                         id="newPassword"
-                                        type="password"
                                         placeholder="Enter new password"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
